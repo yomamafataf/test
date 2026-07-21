@@ -10,12 +10,13 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = (
     os.getenv("FLASK_SECRET_KEY") or secrets.token_hex(32)
 )
-CSRFProtect(app)
+
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 PASSWORD_FILE = Path(__file__).with_name(
     "10-million-password-list-top-1000.txt"
 )
-
 
 def load_common_passwords():
     with PASSWORD_FILE.open(
