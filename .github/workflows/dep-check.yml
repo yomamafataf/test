@@ -5,7 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-    
+  workflow_dispatch:
+
 permissions:
   contents: read
   security-events: write
@@ -13,60 +14,51 @@ permissions:
 jobs:
   SecurityScan:
     runs-on: ubuntu-latest
-    name: Secrets + Dependency Audit
+    name: Secrets and Dependency Audit
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ------------------------
-      # 1️⃣ Gitleaks Secret Scan
-      # ------------------------
-      - name: Scan for secrets using Gitleaks
+      - name: Scan for Secrets Using Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --source=. --verbose --redact --exit-code=1
 
-      # ------------------------
-      # 2️⃣ Python Setup
-      # ------------------------
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.12"
 
-      - name: Install Python dependencies
+      - name: Install Python Dependencies
         run: pip install -r web/requirements.txt
 
-      # ------------------------
-      # 3️⃣ pip-audit
-      # ------------------------
       - name: Install pip-audit
         run: pip install pip-audit
 
       - name: Run pip-audit
         run: |
-          echo "Running pip-audit..."
-          pip-audit -r web/requirements.txt
+          mkdir -p reports
+          pip-audit -r web/requirements.txt \
+            --format json \
+            --output reports/pip-audit.json
 
-      # ------------------------
-      # 4️⃣ OWASP Dependency Check
-      # ------------------------
-      - name: OWASP Dependency-Check
+      - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
-          project: 'password'
-          path: 'web'
-          format: 'HTML'
-          out: 'reports'
+          project: "password"
+          path: "web"
+          format: "HTML"
+          out: "reports"
           args: >
             --enableExperimental
             --failOnCVSS 7
             --enableRetired
 
-      - name: Upload OWASP DC report
+      - name: Upload Security Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-check-report
+          name: security-reports
           path: reports
+          if-no-files-found: warn
