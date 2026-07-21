@@ -1,16 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Search Page</title>
+    <meta charset="UTF-8">
+    <title>Password Validation</title>
 </head>
 <body>
-    <h1>Search</h1>
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
+    <h1>Password Validation</h1>
+
+    {% if errors %}
+        <ul style="color: red;">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
     {% endif %}
-    <form method="POST">
-        <input type="text" name="search_term" placeholder="Enter search term" required>
-        <button type="submit">Submit</button>
+
+    <form method="post">
+        <label for="password">Password:</label>
+
+        <input
+            id="password"
+            name="password"
+            type="password"
+            maxlength="64"
+            autocomplete="new-password"
+            required
+        >
+
+        <button type="submit">Login</button>
     </form>
 </body>
 </html>
