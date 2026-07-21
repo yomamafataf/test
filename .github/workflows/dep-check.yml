@@ -1,4 +1,4 @@
-name: OWASP Dependency Check
+name: OWASP Dependency and SonarQube Checks
 
 on:
   push:
@@ -13,8 +13,8 @@ permissions:
 
 jobs:
   SecurityScan:
-    runs-on: ubuntu-latest
     name: Secrets and Dependency Audit
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -61,4 +61,50 @@ jobs:
         with:
           name: security-reports
           path: reports
+          if-no-files-found: warn
+
+  SonarQubeAnalysis:
+    name: SonarQube Analysis
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 15
+
+    # Do not execute untrusted pull-request code on the lab PC.
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check SonarQube Status
+        shell: powershell
+        run: |
+          $response = Invoke-RestMethod `
+            -Uri "http://127.0.0.1:9000/api/system/status"
+
+          if ($response.status -ne "UP") {
+            throw "SonarQube is not ready. Status: $($response.status)"
+          }
+
+          Write-Host "SonarQube is ready"
+
+      - name: Run SonarQube Analysis
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: http://127.0.0.1:9000
+        with:
+          skipSignatureVerification: true
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+
+      - name: Upload SonarQube Analysis Metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarqube-analysis-metadata
+          path: .scannerwork/report-task.txt
+          include-hidden-files: true
           if-no-files-found: warn
