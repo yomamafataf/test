@@ -16,24 +16,24 @@
     {% endif %}
 
     <form method="post">
-    <input
-        type="hidden"
-        name="csrf_token"
-        value="{{ csrf_token() }}"
-    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
 
-    <label for="password">Password:</label>
+        <label for="password">Password:</label>
 
-    <input
-        id="password"
-        name="password"
-        type="password"
-        maxlength="64"
-        autocomplete="new-password"
-        required
-    >
+        <input
+            id="password"
+            name="password"
+            type="password"
+            maxlength="64"
+            autocomplete="new-password"
+            required
+        >
 
-    <button type="submit">Login</button>
+        <button type="submit">Login</button>
     </form>
 </body>
 </html>

@@ -1,9 +1,11 @@
 from pathlib import Path
 import os
 import secrets
-from flask_wtf.csrf import CSRFProtect
-app = Flask(__name__)
+
 from flask import Flask, render_template, request
+from flask_wtf.csrf import CSRFProtect
+
+app = Flask(__name__)
 
 app.config["SECRET_KEY"] = (
     os.getenv("FLASK_SECRET_KEY") or secrets.token_hex(32)
@@ -33,23 +35,28 @@ COMMON_PASSWORDS = load_common_passwords()
 def validate_password(password):
     errors = []
 
-    # The historical C6 requirement used 10 characters when MFA was absent.
     if len(password) < 10:
-        errors.append("Password must contain at least 10 characters.")
+        errors.append(
+            "Password must contain at least 10 characters."
+        )
 
-    # Support long passphrases but impose a reasonable upper limit.
     if len(password) > 64:
-        errors.append("Password must not exceed 64 characters.")
+        errors.append(
+            "Password must not exceed 64 characters."
+        )
 
-    # Historical C6 permits printable ASCII characters and spaces.
-    if any(ord(character) < 32 or ord(character) > 126
-           for character in password):
+    if any(
+        ord(character) < 32 or ord(character) > 126
+        for character in password
+    ):
         errors.append(
             "Password may only contain printable characters and spaces."
         )
 
     if password.casefold() in COMMON_PASSWORDS:
-        errors.append("This password appears in the common-password list.")
+        errors.append(
+            "This password appears in the common-password list."
+        )
 
     return errors
 
@@ -61,12 +68,20 @@ def home():
         errors = validate_password(password)
 
         if errors:
-            return render_template("index.html", errors=errors)
+            return render_template(
+                "index.html",
+                errors=errors,
+            )
 
-        # Render directly instead of placing the password in the URL.
-        return render_template("result.html", password=password)
+        return render_template(
+            "result.html",
+            password=password,
+        )
 
-    return render_template("index.html", errors=[])
+    return render_template(
+        "index.html",
+        errors=[],
+    )
 
 
 if __name__ == "__main__":
