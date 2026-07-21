@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
@@ -27,20 +27,23 @@ services:
       - appnet
 
   sonarqube:
-    image: sonarqube:latest
+    image: sonarqube:community
+    container_name: sonarqube
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
     networks:
       - appnet
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+networks:
+  appnet:
 
 volumes:
   sonarqube_data:
   sonarqube_extensions:
-
-networks:
-  appnet:
+  sonarqube_logs:

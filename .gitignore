@@ -1,1 +1,6 @@
-sonar-project.properties
+actions-runner/
+web/node_modules/
+**/__pycache__/
+*.pyc
+.scannerwork/
+reports/
